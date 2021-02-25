@@ -8,8 +8,15 @@ router.get('/',(req,res,next)=>{
 });
 
 router.post('/',(req,res,next)=>{
+
+    var order = {
+        productId : req.body.productId,
+        quantity : req.body.quantity 
+    };
+
     res.status(201).json({
-        message : 'Created order'
+        message : 'Created order',
+        order: order
     });
 });
 

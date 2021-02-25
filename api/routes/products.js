@@ -10,8 +10,15 @@ router.get('/',(req,res,next)=>{
 });
 
 router.post('/',(req,res,next)=>{
+
+    var product = {
+        name : req.body.name,
+        price: req.body.price
+    }
+
     res.status(200).json({
-        message : 'first post request'
+        message : 'first post request',
+        createdProduct: product 
     });
 });
 
