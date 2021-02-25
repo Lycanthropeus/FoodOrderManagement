@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-
-
+const Product = require('../models/product');
+const mongoose = require('mongoose');
 
 router.get('/',(req,res,next)=>{
     res.status(200).json({
@@ -9,32 +9,33 @@ router.get('/',(req,res,next)=>{
     });
 });
 
-router.post('/',(req,res,next)=>{
+router.post('/',async(req,res,next)=>{
 
-    var product = {
-        name : req.body.name,
-        price: req.body.price
-    }
-
-    res.status(200).json({
-        message : 'first post request',
-        createdProduct: product 
+    var product = new Product({
+        name: req.body.name,
+        price : req.body.price
     });
+    try{
+        const createdPost = await product.save();
+        res.status(200).json({
+            message : 'first post',
+            createdProduct: createdPost 
+        });
+    }
+    catch(err)
+    {
+        res.json({message : err});
+    }
 });
 
-router.get('/:postId', (req,res,next)=>{
+router.get('/:postId', async(req,res,next)=>{
     var postId = req.params.postId;
-    if(postId == 'hey')
-    {
-        res.status(200).json({
-            message :'hey to you too!'
-        });   
+    try{
+        var getPost = await Product.find({_id : postId});
+        res.status(200).json({message:getPost});
     }
-    else
-    {
-        res.status(200).json({
-            message : '-_-'
-        });
+    catch(err){
+        res.json({message:err});
     }
 });
 
