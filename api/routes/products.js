@@ -3,10 +3,17 @@ const router = express.Router();
 const Product = require('../models/product');
 const mongoose = require('mongoose');
 
-router.get('/',(req,res,next)=>{
-    res.status(200).json({
-        message : 'first get request'
-    });
+router.get('/',async(req,res,next)=>{
+    try{
+        const allposts = await Product.find();
+        res.status(200).json(allposts);
+    }
+    catch(err){
+        res.status(500).json({
+            message : err
+        });
+    }
+
 });
 
 router.post('/',async(req,res,next)=>{
@@ -24,7 +31,7 @@ router.post('/',async(req,res,next)=>{
     }
     catch(err)
     {
-        res.json({message : err});
+        res.status(500).json({Error : err});
     }
 });
 
@@ -35,22 +42,36 @@ router.get('/:postId', async(req,res,next)=>{
         res.status(200).json({message:getPost});
     }
     catch(err){
-        res.json({message:err});
+        res.status(500).json({Error:err});
     }
 });
 
-router.patch('/:postId', (req,res,next)=>{
+router.patch('/:postId', async(req,res,next)=>{
     var postId = req.params.postId;
-    res.status(200).json({
-        message: 'updated post'
-    });
+    const updateOps = {};
+
+    for(const ops of req.body) {
+        updateOps[ops.propName] = ops.value;
+    }
+    try {
+        var updatePost  = await Product.updateOne({_id : postId},{$set : updateOps});
+        res.status(200).json(updatePost);
+    }
+    catch(err) {
+        res.status(500).json({message:err});
+    }
 });
 
-router.delete('/:postId', (req,res,next)=>{
+router.delete('/:postId', async(req,res,next)=>{
     var postId = req.params.postId;
-    res.status(200).json({
-        message : 'deleted post'
-    });
+    try {
+        var status = await Product.remove({ _id : postId});
+        res.status(200).json(status);
+    }
+    catch(err)
+    {
+        res.status(500).json({message : err});      
+    }
 });
 
 
