@@ -70,7 +70,7 @@ router.post('/:userId/orders',async(req,res,next)=>{
         //res.send(userId);
         var getUser = await User.find({_id : userId});
         var myOrder = new Order({
-            myProduct : req.body.productId,
+            myProduct : req.body.productIdArray,
             quantity : req.body.quantity,
             placedBy : getUser[0].username
         });
@@ -97,11 +97,43 @@ router.delete('/:userId/orders/:orderId',async(req,res,next)=>{
     }
 });
 
+router.get('/:userId/orders/:orderId',async(req,res,next)=>{
+    var userId = req.params.userId;
+    var orderId = req.params.orderId;
+    
+    try
+    {
+        var getUser = await User.find({_id : userId});
+        var response = await Order.find({_id : orderId});
+        res.status(200).json({Found : response});
+    }
+    catch{
+        res.status(500).json('Unable to find');
+    }
+});
 
-router.get('/:userId/checkout',(req,res,next)=>{
-    Order.findOne({placedBy : "Lata"}).populate('myProduct').exec(function(err,data){
-        res.json({price:data.myProduct.price});
-    })
+
+
+
+router.get('/:userId/checkout',async(req,res,next)=>{
+
+    var userId = req.params.userId;
+    try
+    {
+        let num = 0;
+        var getUser = await User.find({_id : userId});
+        Order.findOne({placedBy : getUser[0].username}).populate('myProduct').exec(function(err,data){
+            for(let i=0;i<data.myProduct.length;i++)
+            {
+                num += data.myProduct[i].price;
+            }
+            res.json(num);
+        });
+    }
+    catch(err)
+    {
+        res.status(500).json({Error : 'failed to checkout'});
+    }
 });
 
 module.exports= router; 
