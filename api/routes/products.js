@@ -5,8 +5,21 @@ const mongoose = require('mongoose');
 
 router.get('/',async(req,res,next)=>{
     try{
-        const allposts = await Product.find();
-        res.status(200).json(allposts);
+        const allposts = await Product.find().select('name price _id');
+        res.status(200).json({
+            length: allposts.length,
+            contents : allposts.map(post=>{
+                return {
+                    name : post.name,
+                    price : post.price,
+                    _id : post._id,
+                    request : {
+                        type : 'GET',
+                        url : 'http://localhost:3000/products/' + post._id   
+                    }
+                }
+            })
+        });
     }
     catch(err){
         res.status(500).json({
@@ -24,9 +37,17 @@ router.post('/',async(req,res,next)=>{
     });
     try{
         const createdPost = await product.save();
-        res.status(200).json({
-            message : 'first post',
-            createdProduct: createdPost 
+        res.status(201).json({
+            message : 'Created product successfully',
+            createdProduct: {
+                name : createdPost.name,
+                price : createdPost.price,
+                _id : createdPost._id,
+                request: {
+                    type : 'GET',
+                    url : "http://localhost:3000/products" + createdPost._id  
+                }
+            } 
         });
     }
     catch(err)
@@ -55,7 +76,13 @@ router.patch('/:postId', async(req,res,next)=>{
     }
     try {
         var updatePost  = await Product.updateOne({_id : postId},{$set : updateOps});
-        res.status(200).json(updatePost);
+        res.status(200).json({
+            message : 'Product updated successfully',
+            request: {
+                type : 'GET',
+                url : 'http://localhost:3000/products/' + postId
+            }
+        });
     }
     catch(err) {
         res.status(500).json({message:err});
@@ -66,7 +93,14 @@ router.delete('/:postId', async(req,res,next)=>{
     var postId = req.params.postId;
     try {
         var status = await Product.remove({ _id : postId});
-        res.status(200).json(status);
+        res.status(200).json({
+            message : 'Product deleted successfully',
+            request : {
+                type : 'POST',
+                url : 'http://localhost:3000/products',
+                body : {name : 'String',price : 'Number'}
+            }
+        });
     }
     catch(err)
     {
