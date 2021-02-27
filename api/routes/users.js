@@ -70,9 +70,9 @@ router.post('/:userId/orders',async(req,res,next)=>{
         //res.send(userId);
         var getUser = await User.find({_id : userId});
         var myOrder = new Order({
-             product : req.body.product,
-             quantity : req.body.quantity,
-             placedBy : getUser[0].username
+            myProduct : req.body.productId,
+            quantity : req.body.quantity,
+            placedBy : getUser[0].username
         });
         var response = await myOrder.save();
         res.json(response);
@@ -97,4 +97,11 @@ router.delete('/:userId/orders/:orderId',async(req,res,next)=>{
     }
 });
 
-module.exports= router;
+
+router.get('/:userId/checkout',(req,res,next)=>{
+    Order.findOne({placedBy : "Lata"}).populate('myProduct').exec(function(err,data){
+        res.json({price:data.myProduct.price});
+    })
+});
+
+module.exports= router; 
