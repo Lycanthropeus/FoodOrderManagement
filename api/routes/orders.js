@@ -16,19 +16,19 @@ router.get('/',async(req,res,next)=>{
 
 });
 
-router.post('/',async(req,res,next)=>{
+// router.post('/',async(req,res,next)=>{
 
-    const order = new Order({
-        product : req.body.productId,
-        quantity : req.body.quantity,
-        placedBy : req.body.placedBy
-    });
+//     const order = new Order({
+//         product : req.body.productId,
+//         quantity : req.body.quantity,
+//         placedBy : req.body.placedBy
+//     });
 
-    const response = await order.save();
-    res.status(201).json({
-        response
-    });
-});
+//     const response = await order.save();
+//     res.status(201).json({
+//         response
+//     });
+// });
 
 router.get('/:orderId',async(req,res,next)=>{
     var orderId = req.params.orderId;
@@ -41,23 +41,23 @@ router.get('/:orderId',async(req,res,next)=>{
     }
 });
 
-router.delete('/:orderId',async(req,res,next)=>{
-    var orderId = req.params.orderId;
-    try {
-        var status = await Order.remove({ _id : orderId});
-        res.status(200).json({
-            message : 'Order deleted successfully',
-            request : {
-                type : 'POST',
-                url : 'http://localhost:3000/products',
-                body : {name : 'String',price : 'Number'}
-            }
-        });
-    }
-    catch(err)
-    {
-        res.status(500).json({message : err});      
-    }
-});
+// router.delete('/:orderId',async(req,res,next)=>{
+//     var orderId = req.params.orderId;
+//     try {
+//         var status = await Order.remove({ _id : orderId});
+//         res.status(200).json({
+//             message : 'Order deleted successfully',
+//             request : {
+//                 type : 'POST',
+//                 url : 'http://localhost:3000/products',
+//                 body : {name : 'String',price : 'Number'}
+//             }
+//         });
+//     }
+//     catch(err)
+//     {
+//         res.status(500).json({message : err});      
+//     }
+// });
 
 module.exports = router;

@@ -5,6 +5,8 @@ const Order = require('../models/order');
 const User = require('../models/user');
 const Cart = require('../models/cart');
 
+
+//GET ALL USERS (done)
 router.get('/',async(req,res,next)=>{
    try{
         const allUsers = await User.find();
@@ -17,6 +19,7 @@ router.get('/',async(req,res,next)=>{
    }
 });
 
+//CREATE NEW USER (done)
 router.post('/',async(req,res,next)=>{
     try{
         var newUser = new User({
@@ -35,7 +38,7 @@ router.post('/',async(req,res,next)=>{
     }
 });
 
-
+//GET SPECIFIC USER (done)
 router.get('/:userId', async(req,res,next)=>{
     var userId = req.params.userId;
     try{
@@ -47,6 +50,33 @@ router.get('/:userId', async(req,res,next)=>{
     }
 });
 
+//MODIFY SPECIFIC USER (done)
+router.patch('/:userId', async(req,res,next)=>{
+    var userId = req.params.userId;
+    var newName = req.body.name;
+    
+    try{
+        var user = await User.updateOne({_id : userId},{$set :{username : newName}});
+        res.json(user);
+    }
+    catch(err){
+        res.status(500).json({Error:err});
+    }
+});
+
+//DELETE SPECIFIC USER (done)
+router.delete('/:userId', async(req,res,next)=>{
+    var userId = req.params.userId;  
+    try{
+        var user = await User.deleteOne({_id : userId});
+        res.json(user);
+    }
+    catch(err){
+        res.status(500).json({Error:err});
+    }
+});
+
+//GET SPECIFIC USER'S ORDERS (done)
 router.get('/:userId/orders',async(req,res,next)=>{
     
     var arr = new Array();
@@ -75,6 +105,7 @@ router.get('/:userId/orders',async(req,res,next)=>{
     }
 });
 
+//CREATE SPECIFIC USER'S ORDERS (done)
 router.post('/:userId/orders',async(req,res,next)=>{
     var userId = req.params.userId;
     try
@@ -105,12 +136,12 @@ router.post('/:userId/orders',async(req,res,next)=>{
     }
 });
 
+//DELETE SPECIFIC ORDER MADE BY USER (done)
 router.delete('/:userId/orders/:orderId',async(req,res,next)=>{
-    var userId = req.params.userId;
-    var CartId = req.params.orderId;
+    var orderId = req.params.orderId;
     try
     {
-        var response = await Cart.deleteOne({_id : CartId});
+        var response = await Order.deleteOne({_id : orderId});
         res.json({success:response});
     }
     catch{
@@ -118,15 +149,13 @@ router.delete('/:userId/orders/:orderId',async(req,res,next)=>{
     }
 });
 
+//GET SPECIFIC ORDER MADE BY USER (done)
 router.get('/:userId/orders/:orderId',async(req,res,next)=>{
-    var userId = req.params.userId;
     var orderId = req.params.orderId;
-    
     try
     {
-        var getUser = await User.find({_id : userId});
-        var cart = await Cart.find({_id : orderId});
-        res.status(200).json({Found : cart});
+        var order = await Order.find({_id : orderId});
+        res.status(200).json({Found : order});
     }
     catch{
         res.status(500).json('Unable to find');
@@ -134,7 +163,7 @@ router.get('/:userId/orders/:orderId',async(req,res,next)=>{
 });
 
 
-
+//GET TOTAL BILL OF SPECIFIC USER (done)
 router.get('/:userId/checkout',async(req,res,next)=>{
 
     var userId = req.params.userId;
