@@ -22,4 +22,4 @@ Operation | Request | URL
 Get all orders placed by user (individual/sharing) | GET | http://localhost:3000/users/:userId/orders
 Bill user | GET | http://localhost:3000/users/:userId/checkout
 Create new order | POST | http://localhost:3000/users/:userId/orders/
-
+Modify existing order | PATCH | http://localhost:3000/users/:userId/orders/:orderId
