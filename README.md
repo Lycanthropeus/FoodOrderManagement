@@ -14,12 +14,21 @@ Operation | Request | URL
 Get all users | GET | http://localhost:3000/users/
 Get user with specific Id | GET | http://localhost:3000/users/:userId    
 Create new user | POST | http://localhost:3000/users/
-Update user | PATCH | http://localhost:3000/users/:userId
+Modify user | PATCH | http://localhost:3000/users/:userId
+Delete user | DELETE | http://localhost:3000/users/:userId
 
 ## Order Management
 Operation | Request | URL
 --------- | --------|----
 Get all orders placed by user (individual/sharing) | GET | http://localhost:3000/users/:userId/orders
-Bill user | GET | http://localhost:3000/users/:userId/checkout
+Bill user for all orders (individual/sharing) | GET | http://localhost:3000/users/:userId/checkout
 Create new order | POST | http://localhost:3000/users/:userId/orders/
 Modify existing order | PATCH | http://localhost:3000/users/:userId/orders/:orderId
+Delete existing order | DELETE | http://localhost:3000/users/:userId/orders/:orderId
+
+## Miscellaneous
+
+Operation | Request | URL
+--------- | --------|----
+View all orders (by all users) | GET | http://localhost:3000/orders
+View specific order | GET | http://localhost:3000/orders/:orderId
