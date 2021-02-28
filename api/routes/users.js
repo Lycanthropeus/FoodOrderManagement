@@ -49,17 +49,30 @@ router.get('/:userId', async(req,res,next)=>{
 
 router.get('/:userId/orders',async(req,res,next)=>{
     
+    var arr = new Array();
     var userId = req.params.userId;
     try{
         var getUser = await User.findOne({_id : userId});
+        var allCarts = await Cart.find({placedBy : {$all :[getUser.username]}});
         
+        for(let i=0;i<allCarts.length;i++)
+        {
+            var currentCart = allCarts[i];
+            var populateCurrentCart = await Cart.findOne({_id : currentCart._id}).populate('cart');
+            var myCartOrder = populateCurrentCart.cart;
+            
+            for(let j=0;j < myCartOrder.length; j++)
+            {
+                var myOrdersinCart = myCartOrder[j];
+                var populateOrdersinCart = await Order.findOne({_id : myOrdersinCart._id}).populate('myProduct');
+                arr.push(populateOrdersinCart);
+            }    
+        }
+        res.json(arr);
     }
     catch(err){
         res.status(500).json({Error:err});
     }
-
-
-    //res.json({message :'Order page of particular user'});
 });
 
 router.post('/:userId/orders',async(req,res,next)=>{
@@ -70,9 +83,7 @@ router.post('/:userId/orders',async(req,res,next)=>{
         var myProductArray =  req.body.productIdArray;
         var myQuantityArray = req.body.quantity;
         
-        var array1 = new Array();
-
-        
+        var array1 = new Array();    
         for(let k=0;k<myProductArray.length;k++)
         {
             var order = new Order({
@@ -96,13 +107,11 @@ router.post('/:userId/orders',async(req,res,next)=>{
 
 router.delete('/:userId/orders/:orderId',async(req,res,next)=>{
     var userId = req.params.userId;
-    var orderId = req.params.orderId;
-    
+    var CartId = req.params.orderId;
     try
     {
-        var getUser = await User.find({_id : userId});
-        var response = await Order.remove({_id : orderId});
-        res.status(200).json({deleted : 'response'});
+        var response = await Cart.deleteOne({_id : CartId});
+        res.json({success:response});
     }
     catch{
         res.status(500).json('Unable to delete');
@@ -116,8 +125,8 @@ router.get('/:userId/orders/:orderId',async(req,res,next)=>{
     try
     {
         var getUser = await User.find({_id : userId});
-        var response = await Order.find({_id : orderId});
-        res.status(200).json({Found : response});
+        var cart = await Cart.find({_id : orderId});
+        res.status(200).json({Found : cart});
     }
     catch{
         res.status(500).json('Unable to find');
@@ -149,23 +158,7 @@ router.get('/:userId/checkout',async(req,res,next)=>{
                 currentBill += (populateOrdersinCart.myProduct.price*populateOrdersinCart.quantity/populateCurrentCart.placedBy.length);
             }    
         }
-
         res.json(currentBill);
-
-
-    
-        //     Cart.find({_id : currentCart._id}).populate('cart').exec(function(err,data){
-        //         for(let j=0;j<data.cart.length;j++)
-        //         {
-        //             var order = data.cart[j];
-        //             Order.findOne({_id : order._id}).populate('myProduct').exec(function(err,data2){
-        //                 myValue += data2.myProduct.price * data2.quantity;
-        //                 myValue /= currentCart.placedBy.length;
-        //             }); 
-        //             console.log(myValue);
-        //         }
-        //     });
-        // }
     }
     catch(err)
     {
