@@ -112,7 +112,7 @@ router.post('/:userId/orders',async(req,res,next)=>{
     {
         var getUser = await User.findOne({ _id : userId});   
         var myProductArray =  req.body.productIdArray;
-        var myQuantityArray = req.body.quantity;
+        var myQuantityArray = req.body.quantityArray;
         
         var array1 = new Array();    
         for(let k=0;k<myProductArray.length;k++)
@@ -126,13 +126,34 @@ router.post('/:userId/orders',async(req,res,next)=>{
         }
         var myCart = new Cart({
             cart : array1,
-            placedBy : req.body.placedBy
+            placedBy : req.body.placedBy,
+            paymentMethod : req.body.paymentMethod,
+            paymentStatus : req.body.paymentStatus
         });
         var response = await myCart.save();
         res.json(response);
     }
     catch{
         res.status(500).json({Error : 'failed'});
+    }
+});
+
+//MODIFY SPECIFIC ORDER MADE BY USER (done)
+router.patch('/:userId/orders/:orderId',async(req,res,next)=>{
+    var orderId = req.params.orderId;
+    var quantity = req.body.quantity;
+
+    try
+    {
+        var myOrder = await Order.findOne({_id : orderId});
+        currentQuantity = myOrder.quantity;
+        currentQuantity += quantity;
+        var response = await Order.updateOne({_id : orderId},{$set :{quantity : currentQuantity}});
+        res.json(response);
+    }
+    catch
+    {
+        res.status(500).json('Unable to modify');
     }
 });
 
@@ -154,7 +175,7 @@ router.get('/:userId/orders/:orderId',async(req,res,next)=>{
     var orderId = req.params.orderId;
     try
     {
-        var order = await Order.find({_id : orderId});
+        var order = await Order.findOne({_id : orderId});
         res.status(200).json({Found : order});
     }
     catch{
