@@ -69,7 +69,7 @@ router.post('/:userId/orders',async(req,res,next)=>{
         var getUser = await User.findOne({ _id : userId});   
         var myProductArray =  req.body.productIdArray;
         var myQuantityArray = req.body.quantity;
-
+        
         var array1 = new Array();
 
         
@@ -84,7 +84,7 @@ router.post('/:userId/orders',async(req,res,next)=>{
         }
         var myCart = new Cart({
             cart : array1,
-            placedBy : getUser.username
+            placedBy : req.body.placedBy
         });
         var response = await myCart.save();
         res.json(response);
@@ -125,34 +125,52 @@ router.get('/:userId/orders/:orderId',async(req,res,next)=>{
 });
 
 
-var value = 0;
 
 router.get('/:userId/checkout',async(req,res,next)=>{
 
     var userId = req.params.userId;
     try
     {
+        var currentBill = 0;
+
         var getUser = await User.findOne({_id : userId});
-        Cart.findOne({placedBy : getUser.username}).populate('cart').exec(function(err,data){
+        var allCarts = await Cart.find({placedBy : {$all :[getUser.username]}});
+
+        for(let i=0;i<allCarts.length;i++)
+        {
+            var currentCart = allCarts[i];
+            var populateCurrentCart = await Cart.findOne({_id : currentCart._id}).populate('cart');
+            var myCartOrder = populateCurrentCart.cart;
             
-            for(let k=0;k<data.cart.length;k++)
+            for(let j=0;j < myCartOrder.length; j++)
             {
-                var order = data.cart[k];
-                Order.findOne({_id : order._id}).populate('myProduct').exec(function(err,data2)
-                {
-                    value += data2.myProduct.price * data2.quantity;
-                    //console.log(value);
-                });
-                return value;
-            }
-            console.log(value);            
-        });
-        
+                var myOrdersinCart = myCartOrder[j];
+                var populateOrdersinCart = await Order.findOne({_id : myOrdersinCart._id}).populate('myProduct');
+                currentBill += (populateOrdersinCart.myProduct.price*populateOrdersinCart.quantity/populateCurrentCart.placedBy.length);
+            }    
+        }
+
+        res.json(currentBill);
+
+
+    
+        //     Cart.find({_id : currentCart._id}).populate('cart').exec(function(err,data){
+        //         for(let j=0;j<data.cart.length;j++)
+        //         {
+        //             var order = data.cart[j];
+        //             Order.findOne({_id : order._id}).populate('myProduct').exec(function(err,data2){
+        //                 myValue += data2.myProduct.price * data2.quantity;
+        //                 myValue /= currentCart.placedBy.length;
+        //             }); 
+        //             console.log(myValue);
+        //         }
+        //     });
+        // }
     }
     catch(err)
     {
         res.status(500).json({Error : 'failed to checkout'});
-    }
+    }   
 });
 
 module.exports= router;     

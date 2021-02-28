@@ -4,7 +4,7 @@ const Order = require('./order');
 
 const cartSchema = new mongoose.Schema({
     cart : [{ type : mongoose.Schema.Types.ObjectId ,ref:'Order'}],
-    placedBy :{     type : String   }
+    placedBy :{type : Array, items: String}
 });
 
 module.exports = mongoose.model('Cart',cartSchema);
