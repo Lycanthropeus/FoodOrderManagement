@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Order = require('../models/order');
 const User = require('../models/user');
+const Cart = require('../models/cart');
 
 router.get('/',async(req,res,next)=>{
    try{
@@ -50,10 +51,8 @@ router.get('/:userId/orders',async(req,res,next)=>{
     
     var userId = req.params.userId;
     try{
-        var getUser = await User.find({ _id : userId });
-        var ordersByUser = await Order.find({placedBy : getUser[0].username}); 
-        res.json(ordersByUser);
-        //res.send(getUser[0].username);
+        var getUser = await User.findOne({_id : userId});
+        
     }
     catch(err){
         res.status(500).json({Error:err});
@@ -67,18 +66,31 @@ router.post('/:userId/orders',async(req,res,next)=>{
     var userId = req.params.userId;
     try
     {
-        //res.send(userId);
-        var getUser = await User.find({_id : userId});
-        var myOrder = new Order({
-            myProduct : req.body.productIdArray,
-            quantity : req.body.quantity,
-            placedBy : getUser[0].username
+        var getUser = await User.findOne({ _id : userId});   
+        var myProductArray =  req.body.productIdArray;
+        var myQuantityArray = req.body.quantity;
+
+        var array1 = new Array();
+
+        
+        for(let k=0;k<myProductArray.length;k++)
+        {
+            var order = new Order({
+                myProduct : myProductArray[k],
+                quantity : myQuantityArray[k],
+            });
+            var status = await order.save();
+            array1.push(order._id);
+        }
+        var myCart = new Cart({
+            cart : array1,
+            placedBy : getUser.username
         });
-        var response = await myOrder.save();
+        var response = await myCart.save();
         res.json(response);
     }
     catch{
-        // res.status(500).json({Error : 'failed'});
+        res.status(500).json({Error : 'failed'});
     }
 });
 
@@ -113,22 +125,29 @@ router.get('/:userId/orders/:orderId',async(req,res,next)=>{
 });
 
 
-
+var value = 0;
 
 router.get('/:userId/checkout',async(req,res,next)=>{
 
     var userId = req.params.userId;
     try
     {
-        let num = 0;
-        var getUser = await User.find({_id : userId});
-        Order.findOne({placedBy : getUser[0].username}).populate('myProduct').exec(function(err,data){
-            for(let i=0;i<data.myProduct.length;i++)
+        var getUser = await User.findOne({_id : userId});
+        Cart.findOne({placedBy : getUser.username}).populate('cart').exec(function(err,data){
+            
+            for(let k=0;k<data.cart.length;k++)
             {
-                num += data.myProduct[i].price;
+                var order = data.cart[k];
+                Order.findOne({_id : order._id}).populate('myProduct').exec(function(err,data2)
+                {
+                    value += data2.myProduct.price * data2.quantity;
+                    //console.log(value);
+                });
+                return value;
             }
-            res.json(num);
+            console.log(value);            
         });
+        
     }
     catch(err)
     {
@@ -136,4 +155,4 @@ router.get('/:userId/checkout',async(req,res,next)=>{
     }
 });
 
-module.exports= router; 
+module.exports= router;     
