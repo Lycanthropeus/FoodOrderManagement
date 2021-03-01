@@ -100,7 +100,8 @@ router.get('/:userId/orders',async(req,res,next)=>{
                         placedBy:currentCart.placedBy,
                         date:currentCart.date,
                         paymentStatus: currentCart.paymentStatus,
-                        paymentMethod: currentCart.paymentMethod};
+                        paymentMethod: currentCart.paymentMethod,
+                        cartId : currentCart._id};
                 arr.push(obj);
             }    
         }
@@ -141,6 +142,32 @@ router.post('/:userId/orders',async(req,res,next)=>{
     }
     catch{
         res.status(500).json({Error : 'failed'});
+    }
+});
+
+//MODIFY CART STATUS BY PAYING 
+router.patch('/:userId/orders/:cartId',async(req,res,next)=>{
+    var cartId = req.params.cartId;
+    var myPaymentStatus = req.body.paymentStatus;
+    try
+    {
+        var myCart = await Cart.findOne({_id : cartId});
+        
+        
+        if(myCart.paymentStatus == "Paid")
+        {
+            var response = await Cart.updateOne({_id : cartId},{$set :{paymentStatus : myPaymentStatus}});
+            res.json(response); 
+        }
+        else if(myCart.paymentStatus != "Not Paid")
+        {
+            var response = await Cart.updateOne({_id : cartId},{$set :{paymentStatus : "Pending"}});
+            res.json(response);
+        }
+    }
+    catch
+    {
+        res.status(500).json('Unable to modify');
     }
 });
 
