@@ -93,9 +93,15 @@ router.get('/:userId/orders',async(req,res,next)=>{
             
             for(let j=0;j < myCartOrder.length; j++)
             {
+                
                 var myOrdersinCart = myCartOrder[j];
                 var populateOrdersinCart = await Order.findOne({_id : myOrdersinCart._id}).populate('myProduct');
-                arr.push(populateOrdersinCart);
+                var obj = {order:populateOrdersinCart,
+                        placedBy:currentCart.placedBy,
+                        date:currentCart.date,
+                        paymentStatus: currentCart.paymentStatus,
+                        paymentMethod: currentCart.paymentMethod};
+                arr.push(obj);
             }    
         }
         res.json(arr);
@@ -142,13 +148,21 @@ router.post('/:userId/orders',async(req,res,next)=>{
 router.patch('/:userId/orders/:orderId',async(req,res,next)=>{
     var orderId = req.params.orderId;
     var quantity = req.body.quantity;
-
+    var productId = req.body.productId;
     try
     {
         var myOrder = await Order.findOne({_id : orderId});
         currentQuantity = myOrder.quantity;
-        currentQuantity += quantity;
-        var response = await Order.updateOne({_id : orderId},{$set :{quantity : currentQuantity}});
+        
+        if(productId == myOrder.myProduct)
+        {
+            currentQuantity += quantity;
+        }
+        else
+        {
+            currentQuantity = quantity;
+        }
+        var response = await Order.updateOne({_id : orderId},{$set :{quantity : currentQuantity, myProduct : productId}});
         res.json(response);
     }
     catch
@@ -175,7 +189,7 @@ router.get('/:userId/orders/:orderId',async(req,res,next)=>{
     var orderId = req.params.orderId;
     try
     {
-        var order = await Order.findOne({_id : orderId});
+        var order = await Order.findOne({_id : orderId}).populate('myProduct');
         res.status(200).json({Found : order});
     }
     catch{

@@ -9,7 +9,8 @@ const cartSchema = new mongoose.Schema({
     paymentStatus: {type : Array, items : {
         type : String,
         enum : ["Paid","Not Paid", "Failed"]
-    }}
+    }},
+    date : {type : Date, default : new Date}
 });
 
 module.exports = mongoose.model('Cart',cartSchema);
