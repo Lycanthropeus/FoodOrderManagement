@@ -24,7 +24,9 @@ Get all orders placed by user (individual/sharing) | GET | http://localhost:3000
 Bill user for all orders (individual/sharing) | GET | http://localhost:3000/users/:userId/checkout
 Create new order | POST | http://localhost:3000/users/:userId/orders/
 Modify existing order | PATCH | http://localhost:3000/users/:userId/orders/:orderId
+Change cart payment status | PATCH | http://localhost:3000/users/:userId/cart/:cartId
 Delete existing order | DELETE | http://localhost:3000/users/:userId/orders/:orderId
+
 
 ## Miscellaneous
 
