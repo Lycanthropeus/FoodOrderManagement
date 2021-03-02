@@ -145,25 +145,60 @@ router.post('/:userId/orders',async(req,res,next)=>{
     }
 });
 
-//MODIFY CART STATUS BY PAYING 
-router.patch('/:userId/orders/:cartId',async(req,res,next)=>{
+//MODIFY CART STATUS BY PAYING (done)
+router.patch('/:userId/cart/:cartId',async(req,res,next)=>{
     var cartId = req.params.cartId;
     var myPaymentStatus = req.body.paymentStatus;
     try
     {
-        var myCart = await Cart.findOne({_id : cartId});
-        
-        
+        var myCart = await Cart.findOne({_id : cartId});        
         if(myCart.paymentStatus == "Paid")
+        {
+            res.json({message : 'no change'})
+        }
+        else
         {
             var response = await Cart.updateOne({_id : cartId},{$set :{paymentStatus : myPaymentStatus}});
             res.json(response); 
         }
-        else if(myCart.paymentStatus != "Not Paid")
-        {
-            var response = await Cart.updateOne({_id : cartId},{$set :{paymentStatus : "Pending"}});
-            res.json(response);
-        }
+    }
+    catch
+    {
+        res.status(500).json('Unable to modify');
+    }
+});
+
+router.delete('/:userId/cart/:cartId',async(req,res,next)=>{ 
+    var cartId = req.params.cartId;
+    try
+    {
+        var response = await Cart.deleteOne({_id : cartId});
+        res.json(response); 
+    }
+    catch
+    {
+        res.status(500).json('Unable to modify');
+    }
+});
+
+router.get('/:userId/cart/:cartId',async(req,res,next)=>{ 
+    var cartId = req.params.cartId;
+    try
+    {
+        var myCart = await Cart.findOne({_id : cartId});
+        res.json(myCart); 
+    }
+    catch
+    {
+        res.status(500).json('Unable to modify');
+    }
+});
+
+router.get('/:userId/cart/',async(req,res,next)=>{ 
+    try
+    {
+        var myCart = await Cart.find();
+        res.json(myCart); 
     }
     catch
     {
