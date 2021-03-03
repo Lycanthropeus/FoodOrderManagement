@@ -284,7 +284,7 @@ router.get('/:userId/checkout',async(req,res,next)=>{
                 currentBill += (populateOrdersinCart.myProduct.price*populateOrdersinCart.quantity/populateCurrentCart.placedBy.length);
             }    
         }
-        res.json(currentBill);
+        res.json({message : 'Amount to be paid by ' + getUser.username + " is " + currentBill});
     }
     catch(err)
     {
